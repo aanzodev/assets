@@ -50,7 +50,7 @@
         <div class="message-content">
             <div class="spinner"></div>
             <h1 id="loading-title">Connecting</h1>
-            <p id="loading-url">Initializing proxy...</p>
+            <p id="loading-url">Installing</p>
             <button id="skip-btn">Skip</button>
         </div>
     </div>
@@ -67,12 +67,12 @@
         const DEFAULT_WISP = window.SITE_CONFIG?.defaultWisp || "wss://wisp.galaxyverse.org/wisp/";
         const WISP_SERVERS = window.SITE_CONFIG?.wispServers || [];
 
-        const ERRORS={noUrl:{title:"No URL Provided",message:"You need to provide a URL to load.",hint:`Format: ${location.pathname}#https://example.com`},invalidUrl:{title:"Invalid URL",message:"The URL you provided is not valid.",hint:`Try: ${location.pathname}#https://google.com`},connectionFailed:{title:"Connection Failed",message:"Could not connect to the website.",hint:"The site may be down or blocking requests."},proxyError:{title:"Proxy Error",message:"Failed to initialize the proxy connection.",hint:"Try refreshing or check your proxy settings."},timeout:{title:"Loading Timeout",message:"The page is taking too long to load.",hint:"Click 'Skip' to view what has loaded, or 'Retry' to try again."},blocked:{title:"Access Denied",message:"This website is blocking access.",hint:"Some sites don't allow being loaded through proxies."},unknown:{title:"Error",message:"An unexpected error occurred.",hint:"Please try again."}};
+        const ERRORS={noUrl:{title:"No URL Provided",message:"You need to provide a URL to load.",hint:`Format: ${location.pathname}#https://example.com`},invalidUrl:{title:"Invalid URL",message:"The URL you provided is not valid.",hint:`Try: ${location.pathname}#https://google.com`},connectionFailed:{title:"Connection Failed",message:"Could not connect to the website.",hint:"The site may be down or blocking requests."}, UtiliyError:{title:"System Error",message:"Failed to initialize the System connection.",hint:"Try refreshing or check your System settings."},timeout:{title:"Loading Timeout",message:"The page is taking too long to load.",hint:"Click 'Skip' to view what has loaded, or 'Retry' to try again."},blocked:{title:"Access Denied",message:"This website is blocking access.",hint:"Some sites don't allow being loaded through embed."},unknown:{title:"Error",message:"An unexpected error occurred.",hint:"Please try again."}};
         const els={loading:document.getElementById('loading'),loadingTitle:document.getElementById('loading-title'),loadingUrl:document.getElementById('loading-url'),error:document.getElementById('error'),errorMessage:document.getElementById('error-message'),iframeContainer:document.getElementById('iframe-container'),skipBtn:document.getElementById('skip-btn'),retryBtn:document.getElementById('retry-btn')};
         const isValidUrl=(url)=>{try{const u=new URL(url);return u.protocol==='http:'||u.protocol==='https:'}catch{return false}};
         const showContent=()=>{els.loading.style.opacity='0';els.loading.style.visibility='hidden';els.iframeContainer.classList.add('loaded')};
         function showError(type,details=''){els.loading.style.display='none';els.error.style.display='flex';const err=ERRORS[type]||ERRORS.unknown;els.errorMessage.innerHTML=`<strong>${err.title}</strong><br><br>${err.message}<br><br><small style="color:var(--text-muted)">${err.hint}</small>${details?`<br><br><code style="font-size:11px;background:var(--surface);padding:4px 8px;border-radius:4px">${details}</code>`:''}`}
-        function getErrorType(msg){msg=(msg||'').toLowerCase();if(msg.includes('fetch')||msg.includes('network'))return'connectionFailed';if(msg.includes('timeout'))return'timeout';if(msg.includes('blocked')||msg.includes('cors')||msg.includes('access'))return'blocked';if(msg.includes('websocket')||msg.includes('wisp'))return'proxyError';return'unknown'}
+        function getErrorType(msg){msg=(msg||'').toLowerCase();if(msg.includes('fetch')||msg.includes('network'))return'connectionFailed';if(msg.includes('timeout'))return'timeout';if(msg.includes('blocked')||msg.includes('cors')||msg.includes('access'))return'blocked';if(msg.includes('websocket')||msg.includes('wisp'))return'UtilityError';return'unknown'}
 
         // Initialize scramjet directly in embed.html
         let scramjetInstance = null;
@@ -101,7 +101,7 @@
             if (connectionInstance) return connectionInstance;
 
             const basePath = location.pathname.replace(/[^/]*$/, '') + '/';
-            const wispUrl = localStorage.getItem("proxServer") || DEFAULT_WISP;
+            const wispUrl = localStorage.getItem("SystemServer") || DEFAULT_WISP;
 
             connectionInstance = new BareMux.BareMuxConnection(basePath + "bareworker.js");
             await connectionInstance.setTransport("https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@2.1.28/dist/index.mjs", [{ wisp: wispUrl }]);
@@ -116,7 +116,7 @@
                     await navigator.serviceWorker.ready;
 
                     // Send config to service worker
-                    const wispUrl = localStorage.getItem("proxServer") || DEFAULT_WISP;
+                    const wispUrl = localStorage.getItem("SystemServer") || DEFAULT_WISP;
                     const allServers = [...WISP_SERVERS, ...JSON.parse(localStorage.getItem('customWisps') || '[]')];
                     const autoswitch = localStorage.getItem('wispAutoswitch') !== 'false';
 
